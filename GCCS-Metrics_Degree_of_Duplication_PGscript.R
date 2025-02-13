@@ -27,34 +27,32 @@ df3$holding_country <- substr(df3$INSTCODE, 1, 3) # Create a column for holding 
 df3$DUPLSITE_LIST <- strsplit(replace_na(df3$DUPLSITE, ""), ";")
 
 duplicates_out_country <- function(site, pat) {
-  # Function to check for duplicates out of the country
+  # works only if all elements in site are strings, no NA value is permitted
+  # duplication at NOR051 (SGSV) is not considered out of the country here
   res <- 0
   for (i in site) {
-    if ("NOR051" %in% i) {
-      next
-    } else if (pat %in% i) {
-      next
-    } else if (i == "" || i == "nan") {
+    if (i %in% c('NOR051', '', 'nan') || substr(i, 1, 3) == pat) {
       next
     } else {
-      res <- 1
-      return(res)
+      return(1)
     }
   }
   return(res)
 }
 
+
 duplicates_in_country <- function(site, pat, holder) {
-  # Function to check for duplicates in the country
+  # works only if all elements in site are strings, no nan value is permitted
+  # do not count duplicates within the same institute (holder)
+  
   res <- 0
   for (i in site) {
-    if ("NOR051" %in% i) {
+    if (grepl("NOR051", i)) {
       next
     } else if (i == holder) {
       next
-    } else if (pat %in% i) {
-      res <- 1
-      return(res)
+    } else if (grepl(pat, i)) {
+      return(1)
     } else if (i == "" || i == "nan") {
       next
     } else {
